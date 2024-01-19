@@ -7,5 +7,5 @@ console.log(div(1,4))
 
 // console.log(path.dirname(__filename))
 // console.log(path.basename(__filename))
-// console.log(path.extname(__filename))
+// console.log(path.(__filename))
 // console.log(global)
