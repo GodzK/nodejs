@@ -4,7 +4,7 @@ const fs = require("fs");
 const fspromises = require("fs").promises;
 const path = require("path");
 
-const logevent = async (message) => {
+const logevent = async (message, logName) => {
   const dateTime = `${format(new Date(), "yyyMMdd\t HH:mm:ss")}`;
   const logitem = `${dateTime}\t${uuid()}\t${message}`;
   console.log(logitem);
@@ -13,7 +13,7 @@ const logevent = async (message) => {
         await fspromises.mkdir(path.join(__dirname, 'FolderJookroo'));
     }
     await fspromises.appendFile(
-      path.join(path.join(__dirname, 'FolderJookroo'), "eventLog.txt"),
+      path.join(path.join(__dirname, 'FolderJookroo', logName), "eventLog.txt"),
       logitem
     );
   } catch (err) {
