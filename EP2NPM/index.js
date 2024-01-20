@@ -84,18 +84,21 @@ const server = http.createServer((req, res) => {
   }
   else{
     switch(path.parse(filePath).base) {
-//  first case
+      // First case
       case 'old-page.html':
         res.writeHead(301, { "location" : '/new-page.html'});
         res.end();
         break;
-// second case
-        case 'www-page.html':
-          res.writeHead(301, { "location" : '/old-page.html'});
-          res.end();
-          break;
-        default:
-          // serve a 404 response
+      
+      // Second case
+      case 'www-page.html':
+        res.writeHead(301, { "location" : '/old-page.html'});
+        res.end();
+        break;
+    
+      // Fix the typo in the default case
+      default:
+        // serve a 404 response
     }
   }
 });
