@@ -4,20 +4,20 @@ const fs = require("fs");
 const fspromise = require("fs").promises;
 const logevent = require("./logEvent");
 const EventEmitter = require("events");
-
 class Emitter extends EventEmitter {}
 const myEmitter = new Emitter();
-myEmitter.on("log", (msg, fileName) => logevent(msg, fileName));
+myEmitter.on("log", (msg, fileName) => logevent(msg,fileName));
 const PORT = process.env.PORT || 3500;
+// hosting on port 3500;
 
-const servefile = async (filePath, contentType, response) => {
+const servefile = async (filePath , contentType, response) => {
   try {
-    const data = await fspromise.readFile(filePath, 'utf8');
-    response.writeHead(filePath.includes('404.html') ? 400 : 200, { 'Content-Type': contentType });
-    response.end(
-      contentType === 'application/json' ? JSON.stringify(data) : data
-    );
-  } catch (err) {
+  const data = await fspromise.readFile(filePath, 'utf8');
+  response.writeHead(filePath.includes('404.html')?400 : 200, {'Content-Type' : contentType, });
+  response.end(
+    contentType =='application/json' ? JSON.stringify(data) : data
+  );
+  } catch(err){
     console.log(err);
     myEmitter.emit("log", `${err.name}\t${err.message}`, 'errLog.txt');
     response.statusCode = 500;
@@ -25,12 +25,16 @@ const servefile = async (filePath, contentType, response) => {
   }
 }
 
+
 const server = http.createServer((req, res) => {
   console.log(req.url, req.method);
+  // ต้องเขียน
   myEmitter.emit("log", `${req.url}\t${req.method}`, 'reqLog.txt');
   const extension = path.extname(req.url);
-  let contentType;
+  // path extnameเพื่อเอาextension
 
+  let contentType;
+  // we expect to get
   switch (extension) {
     case ".css":
       contentType = "text/css";
@@ -47,42 +51,61 @@ const server = http.createServer((req, res) => {
     case ".jpg":
       contentType = "image/jpg";
       break;
+    default:
     case "txt":
       contentType = "text/plain";
       break;
-    default:
-      contentType = "text/html";
+      dafault: contentType = "text/html";
   }
 
-  let filePath = contentType === "text/html" && req.url === "/"
-    ? path.join(__dirname, "view", "index.html")
-    : contentType === "text/html" && req.url.slice(-1) === "/"
-    ? path.join(__dirname, "views", req.url, "index.html")
-    : contentType === "text/html"
-    ? path.join(__dirname, "views", req.url)
-    : path.join(__dirname, req.url);
+  let filePath =
+  // contentType = "condition"
+  // path.join = "result"
+    contentType === "text/html" && req.url === "/"
+    // then this is the value vv
+      ? path.join(__dirname, "view", "index.html")
+      // if it html then if the last charactor is"/" that is not a main directory มันจะเอา req.urlมาด้วย
+      : contentType === "text/html" && req.url.slice(-1) === "/"
+      ? path.join(__dirname, "views", req.url, "index.html")
+      : contentType === "text/html"
+      ? path.join(__dirname, "views", req.url)
+      // ถ้าไม่ใช่อีกมันอาจจะเป็นcss imageก็ได้
+      : path.join(__dirname, req.url);
 
-  if (!extension && req.url.slice(-1) !== '/') filePath += '.html';
+      // make .HTML file extension not require in the browser
+    if (!extension && req.url.slice(-1)!== '/') filePath += '.html';
 
-  const fileExists = fs.existsSync(filePath);
+    // checkว่าไฟล์นี้มีอยู่จริงมั้ย
+    const fileExists = fs.existsSync(filePath);
 
-  if (!fileExists) {
-    switch (path.parse(filePath).base) {
-      case 'new-page.html':
-        res.writeHead(301, { "Location": '/new-page.html' });
+
+  if (fileExists){
+    
+  }
+  else{
+    switch(path.parse(filePath).base) {
+      // First case
+      case 'old-page.html':
+        res.writeHead(301, { "location" : '/new-page.html'});
         res.end();
         break;
-
+      
+      // Second case
       case 'www-page.html':
-        res.writeHead(301, { "Location": '/old-page.html' });
+        res.writeHead(301, { "location" : '/old-page.html'});
         res.end();
         break;
-
+    
+      // Fix the typo in the default case
       default:
-        res.writeHead(404, { 'Content-Type': 'text/plain' });
-        res.end('404 Not Found');
+        // serve a 404 response
     }
   }
 });
 
 server.listen(PORT, () => console.log(`Server Running on port ${PORT}`));
+
+// myEmitter.on("log", (msg) => logevent(msg));
+// setTimeout(() => {
+//   myEmitter.emit("log", "log emitted!");
+// }, 2000);
